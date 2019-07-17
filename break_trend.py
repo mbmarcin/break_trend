@@ -10,7 +10,10 @@ def best_fit_slope(xs, ys):
     """
     machine learning regression
     """
-    m = (((mean(xs)*mean(ys)) - mean(xs*ys))/((mean(xs)*mean(xs)) - mean(xs*xs)))
+    try:
+        m = (((mean(xs) * mean(ys)) - mean(xs * ys)) / ((mean(xs) * mean(xs)) - mean(xs * xs)))
+    except ZeroDivisionError:
+        return 0
     #b = mean(ys) - m*mean(xs)
     return m #,b
 
@@ -35,14 +38,42 @@ def cumulative_slope_per_month(df, year):
     df1 = df.loc[df.iloc[:, 0] == year].sort_values(by=[df.columns[0], df.columns[1]])
     for i in list(df1.iloc[:, 2].drop_duplicates()):
         if len(df1.loc[df1.iloc[:, 2] == i]) >= 3:
-            #x = df1.loc[df1.iloc[:, 2] == i]
             df_main = pd.merge(table_id(df, year), df1.loc[df1.iloc[:, 2] == i], on='id', how='left').fillna(0)
-            print(df_main)
-    #return x
 
 
-print(cumulative_slope_per_month(get_data(), 2019))
 
+
+
+
+
+
+            """
+            a = 0
+            row = 3
+            while a < 3:
+                if df_main.iloc[:row, 4].sum() > 0:
+                    pass
+
+
+
+
+                    break
+                else:
+                    pass
+                row += 3
+                a += 1
+            """
+            return df_main
+
+        else:
+            pass
+
+
+
+
+dfx = cumulative_slope_per_month(get_data(), 2019)
+print(dfx.iloc[0:3, 4])
+#dat.iloc[row, column]
 
 
 
