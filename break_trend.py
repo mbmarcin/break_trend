@@ -18,7 +18,7 @@ def table_id(year, df):
     temp = df.loc[df.iloc[:, 0] == year].sort_values(by=[df.columns[0], df.columns[1]])
     return temp.iloc[:, 4].drop_duplicates().to_frame()
 
-def parametr_year_month(df):
+def max_year_month(df):
     """
     :param df:
     :return: max year and max month of table
@@ -28,27 +28,27 @@ def parametr_year_month(df):
     max_year_month1 = int(max_year_month0.iloc[:, 1].max())  # ------------ Think about it
     return max_year, max_year_month1
 
+def cumulative_slope_per_month(df, year):
+    pass
+
+def slope_per_range():
+    pass
+
+
+
+
+
+
+
+
+
+
 
 df = get_data()
 #print(get_data().head())
-a, b = parametr_year_month(df)
-print(a, b)
+a, b = max_year_month(df)
 #print(table_id(2019, get_data()).head())
 
 
 # aktualny rok, badanie trendu po kolei
 # dorzucić max rok dla uniwersalności funkcji
-"""
-def max_year_slope_grupobrand(df_max_year):
-    # dorzucić max rok dla uniwersalności funkcji
-    # if co jeżeli brand nie ma tyle mc do analizy
-    for grupobrand in list(df_max_year.iloc[:, 2].drop_duplicates()):
-        df_temp = df_max_year.loc[df_max_year.iloc[:, 2] == grupobrand].sort_values(
-            by=[df_max_year.columns[0], df_max_year.columns[1]])
-        ids = table_id(max_year, df0)
-        df_main = pd.merge(ids, df_temp, on='id', how='left').fillna(0)
-
-        # df_main.iloc[:,3]
-        # print(list(df_temp.iloc[:,3].values))
-        print(df_main.iloc[:, 4])
-"""
