@@ -53,19 +53,44 @@ def cumulative_slope_per_month(df, year):
     :param year: int
     :return: df
     """
+    #tt = list() # table with all slops
     df1 = df.loc[df.iloc[:, 0] == year].sort_values(by=[df.columns[0], df.columns[1]])
     for i in list(df1.iloc[:, 2].drop_duplicates()):
         if len(df1.loc[df1.iloc[:, 2] == i]) >= 3: #1.minimum 3 months activity
             df_main0 = pd.merge(table_id(df, year), df1.loc[df1.iloc[:, 2] == i], on='id', how='left').fillna(0)
             df_main1 = pd.merge(df_main0, slope_per_month(df_main0.iloc[:, 4]), on='mc', how='left').fillna(0)
-            return df_main1
+
+            #tt.append(df_main1.iloc[:, [3, 5]]) #----------------------------------------------------------------------look at this
+
+            #check break trend
+            ss = df_main1.iloc[:, 5]
+            reverse = ss.iloc[::-1]
+            x = reverse.iloc[:len(reverse) - 2]
+            print(x)
 
         else:
             pass
+    return #df_main1.iloc[:, 5] #pd.concat(tt)
+
 
 
 dfx = cumulative_slope_per_month(get_data(), 2019)
-print(dfx)
+dfx
+#x = dfx.iloc[::-1]
+#print(x.iloc[:len(x)-2])
+
+#print(x)
+
+#print(x.iloc[:len(x)-2],'\n', x, '\n',dfx)
+#-------------------------------------------------------------------
+#
+#x = dfx[::-1]
+#print(dfx[::-1],'\n', dfx,'\n', x[0:len(x)-2] )
+#--------------------------------------------------------------
+
+#dfx[::-1]
+#print(dfx.iloc[:, [1, 3]])
+#surveys_df.loc[[0, 10], :]
 #print(dfx.iloc[0:3, 4])
 #dat.iloc[row, column]
 
