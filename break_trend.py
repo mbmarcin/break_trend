@@ -62,12 +62,27 @@ def cumulative_slope_per_month(df, year):
 
             #tt.append(df_main1.iloc[:, [3, 5]]) #----------------------------------------------------------------------look at this
 
-            #check break trend
+            '#check break trend'
             ss = df_main1.iloc[:, 5]
             reverse = ss.iloc[::-1]
-            x = reverse.iloc[:len(reverse) - 2]
-            print(x)
 
+            l_temp = list()
+            for val in reverse.iloc[:len(reverse) - 2]:
+                if val < 0:
+                    l_temp.append(val)
+                else:
+                    break
+
+            '#check direction trend'
+            dd = [l_temp[i] < l_temp[i + 1] for i in range(len(l_temp) - 1)]
+            dd.count(True)
+
+            #[unicode(x.strip()) if x is not None else '' for x in row]
+
+            #new_list = [expression(i) for i in old_list if filter(i)]
+
+
+            print(l_temp, dd.count(True))
         else:
             pass
     return #df_main1.iloc[:, 5] #pd.concat(tt)
@@ -76,11 +91,12 @@ def cumulative_slope_per_month(df, year):
 
 dfx = cumulative_slope_per_month(get_data(), 2019)
 dfx
+
+
 #x = dfx.iloc[::-1]
 #print(x.iloc[:len(x)-2])
 
 #print(x)
-
 #print(x.iloc[:len(x)-2],'\n', x, '\n',dfx)
 #-------------------------------------------------------------------
 #
