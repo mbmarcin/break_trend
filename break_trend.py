@@ -64,7 +64,6 @@ def cumulative_slope_per_month(df, year):
             pass
 
 
-
 dfx = cumulative_slope_per_month(get_data(), 2019)
 print(dfx)
 #print(dfx.iloc[0:3, 4])
