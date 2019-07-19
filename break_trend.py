@@ -59,6 +59,8 @@ def cumulative_slope_per_month(df, year):
     tt = list()  # table with all slops
     result = pd.DataFrame(columns=('year', 'id', 'break_point', 'dir', 'activity'))
     row = 0
+    counter = list()
+    all = len(df1.iloc[:, 2].drop_duplicates())
     for i in list(df1.iloc[:, 2].drop_duplicates()):
         if len(df1.loc[df1.iloc[:, 2] == i]) >= 3: #1.minimum 3 months activity
             df_main0 = pd.merge(table_id(df, year), df1.loc[df1.iloc[:, 2] == i], on='id', how='left').fillna(0)
@@ -89,6 +91,12 @@ def cumulative_slope_per_month(df, year):
 
             result.loc[row] = [year, i, len(l_temp), dir_, len(df1.loc[df1.iloc[:, 2] == i])]
             row += 1
+            counter.append(i)
+
+            if len(counter) % 10 == 0:
+                print('licznik: {}/{}'.format(len(counter), all))
+            else:
+                pass
         else:
             pass
     return result #pd.concat(tt) #df_main1.iloc[:, 5] #pd.concat(tt)
