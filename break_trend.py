@@ -56,7 +56,7 @@ def cumulative_slope_per_month(df, year):
 
     df1 = df.loc[df.iloc[:, 0] == year].sort_values(by=[df.columns[0], df.columns[1]])
 
-    tt = list()  # table with all slops
+    #tt = list()  # table with all slops
     result = pd.DataFrame(columns=('year', 'id', 'break_point', 'dir', 'activity'))
     row = 0
     counter = list()
@@ -66,7 +66,7 @@ def cumulative_slope_per_month(df, year):
             df_main0 = pd.merge(table_id(df, year), df1.loc[df1.iloc[:, 2] == i], on='id', how='left').fillna(0)
             df_main1 = pd.merge(df_main0, slope_per_month(df_main0.iloc[:, 4]), on='mc', how='left').fillna(0)
 
-            tt.append(df_main1.iloc[:, [3, 5]]) #----------------------------------------------------------------------look at this
+            #tt.append(df_main1.iloc[:, [3, 5]]) #----------------------------------------------------------------------look at this
 
             '#check break trend'
             ss = df_main1.iloc[:, 5]
@@ -89,17 +89,20 @@ def cumulative_slope_per_month(df, year):
             else:
                 dir_ = 0
 
-            result.loc[row] = [year, i, len(l_temp), dir_, len(df1.loc[df1.iloc[:, 2] == i])]
-            row += 1
-            counter.append(i)
+            if len(l_temp) > 0:
+                result.loc[row] = [year, i, len(l_temp), dir_, len(df1.loc[df1.iloc[:, 2] == i])]
+                row += 1
+                counter.append(i)
+            else:
+                pass
 
             if len(counter) % 10 == 0:
-                print('licznik: {}/{}'.format(len(counter), all))
+                print('Trend analysis: {}/{}'.format(len(counter), all))
             else:
                 pass
         else:
             pass
-    return result #pd.concat(tt) #df_main1.iloc[:, 5] #pd.concat(tt)
+    return result #pd.concat(tt) for
 
 dfx = cumulative_slope_per_month(get_data(), 2019)
 
