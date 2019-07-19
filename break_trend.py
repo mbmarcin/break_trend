@@ -74,15 +74,20 @@ def cumulative_slope_per_month(df, year):
                     break
 
             '#check direction trend'
-            dd = [l_temp[i] < l_temp[i + 1] for i in range(len(l_temp) - 1)]
-            dd.count(True)
+            if len(l_temp) > 0:
+                dd = [l_temp[i] < l_temp[i + 1] for i in range(len(l_temp) - 1)]
+                dir_ = dd.count(True) / (len(l_temp) - 1)*-1
+            else:
+                dir_ = 0
 
-            #[unicode(x.strip()) if x is not None else '' for x in row]
+            """
+            try:
+                dir_ = dd.count(True)/(len(l_temp)-1)
+            except ZeroDivisionError:
+                dir_ = 0
+            """
 
-            #new_list = [expression(i) for i in old_list if filter(i)]
-
-
-            print(l_temp, dd.count(True))
+            print(dir_)
         else:
             pass
     return #df_main1.iloc[:, 5] #pd.concat(tt)
@@ -93,6 +98,11 @@ dfx = cumulative_slope_per_month(get_data(), 2019)
 dfx
 
 
+"""
+x = [4,3,2,3]
+dd = [x[i] < x[i+1] for i in range(len(x)-1)] 
+print(dd.count(True)/(len(x)-1), dd)
+"""
 #x = dfx.iloc[::-1]
 #print(x.iloc[:len(x)-2])
 
