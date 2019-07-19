@@ -83,7 +83,7 @@ def cumulative_slope_per_month(df, year):
             if len(l_temp) > 0:
                 dd = [l_temp[i] < l_temp[i + 1] for i in range(len(l_temp) - 1)]
                 try:
-                    dir_ = dd.count(True) / (len(l_temp) - 1)*-1
+                    dir_ = round(dd.count(True) / (len(l_temp) - 1)*-1, 2)
                 except ZeroDivisionError:
                     dir_ = -1
             else:
@@ -109,32 +109,5 @@ dfx = cumulative_slope_per_month(get_data(), 2019)
 print(dfx)
 
 
-"""
-x = [4,3,2,3]
-dd = [x[i] < x[i+1] for i in range(len(x)-1)] 
-print(dd.count(True)/(len(x)-1), dd)
-"""
-#x = dfx.iloc[::-1]
-#print(x.iloc[:len(x)-2])
 
-#print(x)
-#print(x.iloc[:len(x)-2],'\n', x, '\n',dfx)
-#-------------------------------------------------------------------
-#
-#x = dfx[::-1]
-#print(dfx[::-1],'\n', dfx,'\n', x[0:len(x)-2] )
-#--------------------------------------------------------------
 
-#dfx[::-1]
-#print(dfx.iloc[:, [1, 3]])
-#surveys_df.loc[[0, 10], :]
-#print(dfx.iloc[0:3, 4])
-#dat.iloc[row, column]
-
-#df = get_data()
-#print(get_data().head())
-#a, b = max_year_month(df)
-#print(table_id(2019, get_data()).head())
-
-# aktualny rok, badanie trendu po kolei
-# dorzucić max rok dla uniwersalności funkcji
