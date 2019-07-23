@@ -30,10 +30,21 @@ def slope_per_month(s):
         slope_.append(best_fit_slope(pd.Series(target), list(range(len(target)))))
     return pd.DataFrame({'mc_slope': slope_, 'mc': list(range(3, len(s)+1))})
 
-
+"""
 def table_id(df, *year):
     temp = df.loc[df.iloc[:, 0].isin(year)].sort_values(by=[df.columns[0], df.columns[1]])
     return temp.iloc[:, 4].drop_duplicates().to_frame()
+"""
+
+def table_id(df, *year, prm=0):
+    if prm == 0:
+        temp = df.loc[df.iloc[:, 0].isin(year)].sort_values(by=[df.columns[0], df.columns[1]])
+        return temp.iloc[:, 4].drop_duplicates().to_frame()
+    else:
+        temp0 = df.iloc[:, [0, 1, 4]].drop_duplicates()
+        temp1 = temp0.loc[temp0.iloc[:, 0].isin(year)].sort_values(by=[temp0.columns[0], temp0.columns[1]])
+        return temp1.reset_index(drop=True)
+
 
 def max_year_month(df):
     """
@@ -80,8 +91,14 @@ def cumulative_slope_per_month(df, year):
     all = len(df1.iloc[:, 2].drop_duplicates())
     for i in list(df1.iloc[:, 2].drop_duplicates()):
         if len(df1.loc[df1.iloc[:, 2] == i]) >= 3: #1.minimum 3 months activity
-            df_main0 = pd.merge(table_id(df, year), df1.loc[df1.iloc[:, 2] == i], on='id', how='left').fillna(0)
-            df_main1 = pd.merge(df_main0, slope_per_month(df_main0.iloc[:, 4]), on='mc', how='left').fillna(0)
+            df_main0 = pd.merge(table_id(df, year),
+                                df1.loc[df1.iloc[:, 2] == i],
+                                on='id',
+                                how='left').fillna(0)
+            df_main1 = pd.merge(df_main0,
+                                slope_per_month(df_main0.iloc[:, 4]),
+                                on=df_main0.columns[2],
+                                how='left').fillna(0)
 
             #tt.append(df_main1.iloc[:, [3, 5]]) #----------------------------------------------------------------------look at this
 
@@ -122,7 +139,7 @@ def cumulative_slope_per_month(df, year):
         else:
             pass
 
-        print(df_main1)
+        print(df_main0)
         break
 
     # function for save tables
