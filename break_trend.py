@@ -43,6 +43,21 @@ def max_year_month(df):
     max_year_month1 = int(max_year_month0.iloc[:, 1].max())  # ------------ Think about it
     return max_year, max_year_month1
 
+
+def to_save(*l):
+    for i in l:
+        i.name = i
+        i.to_csv('{}.txt'.format(i.name), sep=';', index=False, header=True)
+        #print('save {}'.format(i))
+        """
+        def write_csv():
+        df2 = pd.DataFrame()
+        for name, df in data.items():
+        df2 = df2.append(df)
+        df2.to_csv('mydf.csv')
+        """
+
+
 def slope_per_range(year=0):
     return year
 
@@ -102,11 +117,46 @@ def cumulative_slope_per_month(df, year):
                 pass
         else:
             pass
-    return result #pd.concat(tt) for
 
-dfx = cumulative_slope_per_month(get_data(), 2019)
+    # function for save tables
+    """
+    result0 = pd.concat(tt)
+    ll = [result, result0]
+    to_save(*ll)
+    """
+    #result0.to_csv('result0.txt', sep=';', index=False, header=True)
+    #result.to_csv('result.txt', sep=';', index=False, header=True)
 
-print(dfx)
+    return result
+#dfx = cumulative_slope_per_month(get_data(), 2019)
+
+def compare_sales(df0, df_result):
+    list_id = list(df_result.iloc[:, 1].drop_duplicates())
+    year_id = int(df_result.iloc[:, 0].drop_duplicates())
+
+    if df0.loc[df0.iloc[:, 0].isin([year_id-1])].empty is True:
+        print('missing the previous year')
+    else:
+        df1 = df0.loc[df0.iloc[:, 0].isin([year_id, year_id-1])]
+        #df2 = df1.iloc[:, 0].drop_duplicates().tolist()
+
+    """
+    df1 = df0.loc[(df0.iloc[:, 1].isin(list_mth)) & (df0.iloc[:, 2] == 'XXXGR18')]
+    # df1 = df1.loc[df1.grupoBRAND == 'XXXGR18']
+    df2 = df1.pivot_table(values='wart', index='mc', columns='rok').reset_index()
+    df2['diff_'] = round(df2.iloc[:, 2] / df2.iloc[:, 1] - 1, 2)
+    df2['diff'] = df2.iloc[:, 2] - df2.iloc[:, 1]
+    print(df2)
+    """
+
+    print(df0.iloc[:, 0].isin([year_id-1]).empty)
+
+
+compare_sales(get_data(), cumulative_slope_per_month(get_data(), 2019))
+
+#print(int(get_data().iloc[:, 0].drop_duplicates())-1)
+
+#print(dfx.head())
 
 
 
