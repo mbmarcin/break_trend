@@ -4,6 +4,7 @@ from statistics import mean
 def get_data(dir0="..\..\data_projects"):
     df0 = pd.read_excel(dir0+"\\"+"tempTrendgrupa.xlsx")
     df0['id'] = df0.iloc[:, 0].astype('str') + df0.iloc[:, 1].astype('str')
+    #df0['id1'] = df0.iloc[:, 1]
     return df0
 
 def best_fit_slope(xs, ys):
@@ -29,8 +30,9 @@ def slope_per_month(s):
         slope_.append(best_fit_slope(pd.Series(target), list(range(len(target)))))
     return pd.DataFrame({'mc_slope': slope_, 'mc': list(range(3, len(s)+1))})
 
-def table_id(df, year):
-    temp = df.loc[df.iloc[:, 0] == year].sort_values(by=[df.columns[0], df.columns[1]])
+
+def table_id(df, *year):
+    temp = df.loc[df.iloc[:, 0].isin(year)].sort_values(by=[df.columns[0], df.columns[1]])
     return temp.iloc[:, 4].drop_duplicates().to_frame()
 
 def max_year_month(df):
@@ -104,6 +106,7 @@ def cumulative_slope_per_month(df, year):
             else:
                 dir_ = 0
 
+            '#add row with result'
             if len(l_temp) > 0:
                 result.loc[row] = [year, i, len(l_temp), dir_, len(df1.loc[df1.iloc[:, 2] == i])]
                 row += 1
@@ -111,12 +114,16 @@ def cumulative_slope_per_month(df, year):
             else:
                 pass
 
+            '#print progress'
             if len(counter) % 10 == 0:
                 print('Trend analysis: {}/{}'.format(len(counter), all))
             else:
                 pass
         else:
             pass
+
+        print(df_main1)
+        break
 
     # function for save tables
     """
@@ -127,20 +134,48 @@ def cumulative_slope_per_month(df, year):
     #result0.to_csv('result0.txt', sep=';', index=False, header=True)
     #result.to_csv('result.txt', sep=';', index=False, header=True)
 
-    return result
+    return #result
 #dfx = cumulative_slope_per_month(get_data(), 2019)
 
-def compare_sales(df0, df_result):
-    list_id = list(df_result.iloc[:, 1].drop_duplicates())
-    year_id = int(df_result.iloc[:, 0].drop_duplicates())
 
+""" if który sprawdza czy jest poprzedni rok ------------------------------------------------------
+    
+    
+    
     if df0.loc[df0.iloc[:, 0].isin([year_id-1])].empty is True:
         print('missing the previous year')
     else:
         df1 = df0.loc[df0.iloc[:, 0].isin([year_id, year_id-1])]
-        #df2 = df1.iloc[:, 0].drop_duplicates().tolist()
+"""
+
+def compare_sales(df0, df_result):
+
+    for i in list(df_result.iloc[:, 1].drop_duplicates()):
+        df0 = df0.loc[df0.iloc[:, 2] == i]
+        #pd.merge(table_id(df, year), df1.loc[df1.iloc[:, 2] == i], on='id', how='left').fillna(0)
+        df_main0 = pd.merge(table_id(get_data(), *list(get_data().iloc[:, 0].drop_duplicates())), df0, on='id', how='left').fillna(0)
+
+
+        df1 = df_result.loc[df_result.iloc[:, 1] == i] # df for break point
+        break_point = int(df1.iloc[:, 2])
+
+
+        #df1 = df0.loc[(df0.iloc[:, 1].isin(list_mth)) & (df0.iloc[:, 2] == 'XXXGR18')]
+        print(df_main0)
+        break
+
+
+
+    #df1 = df0.loc[df0.iloc[:, 0].isin([year_id, year_id-1])]
+    #df2 = df1.loc[df1.iloc[:, 1].isin([list_id])]
 
     """
+    
+    x1 = 4
+    max_ = 7
+    for i in range((max_-x1),max_):
+    print(i)
+    
     df1 = df0.loc[(df0.iloc[:, 1].isin(list_mth)) & (df0.iloc[:, 2] == 'XXXGR18')]
     # df1 = df1.loc[df1.grupoBRAND == 'XXXGR18']
     df2 = df1.pivot_table(values='wart', index='mc', columns='rok').reset_index()
@@ -149,10 +184,11 @@ def compare_sales(df0, df_result):
     print(df2)
     """
 
-    print(df0.iloc[:, 0].isin([year_id-1]).empty)
+    #print(df1.iloc[:, 0].drop_duplicates())
 
 
-compare_sales(get_data(), cumulative_slope_per_month(get_data(), 2019))
+#compare_sales(get_data(), cumulative_slope_per_month(get_data(), 2019))
+print(cumulative_slope_per_month(get_data(), 2019))
 
 #print(int(get_data().iloc[:, 0].drop_duplicates())-1)
 
