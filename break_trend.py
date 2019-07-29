@@ -88,7 +88,7 @@ def cumulative_slope_per_month(df, year):
     row = 0
     counter = list()
     all = len(df1.iloc[:, 2].drop_duplicates())
-    for i in list(df1.iloc[:, 2].drop_duplicates()):
+    for i in df1.iloc[:, 2].drop_duplicates():
         if len(df1.loc[df1.iloc[:, 2] == i]) >= 3:  # 1.minimum 3 months activity
             df_main0 = pd.merge(table_id(df, year),
                                 df1.loc[df1.iloc[:, 2] == i],
@@ -138,6 +138,7 @@ def cumulative_slope_per_month(df, year):
         else:
             pass
 
+
     # function for save tables
     """
     result0 = pd.concat(tt)
@@ -159,10 +160,13 @@ def cumulative_slope_per_month(df, year):
 
 
 def compare_sales(df0, df_result):
+
+    y, m = max_year_month(df0)
+    list_df = list()
     for i in df_result.iloc[:, 1].drop_duplicates():
-        df0 = df0.loc[df0.iloc[:, 2] == i]
+        df_n = df0.loc[df0.iloc[:, 2] == i]
         df_main0 = pd.merge(table_id(get_data(), *list(get_data().iloc[:, 0].drop_duplicates()), prm=1),
-                            df0,
+                            df_n,
                             on='id',
                             how='left',
                             suffixes=('_df1', '_df2')).fillna(0)
@@ -171,18 +175,18 @@ def compare_sales(df0, df_result):
         break_point = int(df1.iloc[:, 2])
 
         sum_month = list()
-        y, m = max_year_month(df0)
+
         for year in df_main0.iloc[:, 0].drop_duplicates():
             df_year = df_main0.loc[(df_main0.iloc[:, 0] == year) & (df_main0.iloc[:, 1] <= m)]
             sum_month.append(df_year.iloc[:, 6].tail(break_point).sum())
-
-        df1.copy()
-        df1['sales'] = sum_month[1]-sum_month[0]
-
+        df_f = df1.copy()
+        df_f['sales'] = sum_month[1]-sum_month[0]
+        list_df.append(df_f)
 
         # df1 = df0.loc[(df0.iloc[:, 1].isin(list_mth)) & (df0.iloc[:, 2] == 'XXXGR18')]
-        print(df1)
-        break
+        #print(df_result.iloc[:, 1].drop_duplicates())
+        #break
+    return pd.concat(list_df)
 
 
 print(
