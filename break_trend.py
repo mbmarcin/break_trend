@@ -83,7 +83,7 @@ def cumulative_slope_per_month(df, year):
 
     df1 = df.loc[df.iloc[:, 0] == year].sort_values(by=[df.columns[0], df.columns[1]])
 
-    # tt = list()  # table with all slops
+    #tt = list()  # table with all slops
     result = pd.DataFrame(columns=('year', 'id', 'break_point', 'dir', 'activity'))
     row = 0
     counter = list()
@@ -99,7 +99,7 @@ def cumulative_slope_per_month(df, year):
                                 on=df_main0.columns[2],
                                 how='left').fillna(0)
 
-            # tt.append(df_main1.iloc[:, [3, 5]]) #----------------------------------------------------------------------look at this
+            #tt.append(df_main1.iloc[:, [3, 5]]) #----------------------------------------------------------------------look at this
 
             '#check break trend'
             ss = df_main1.iloc[:, 5]
@@ -159,25 +159,36 @@ def cumulative_slope_per_month(df, year):
 
 
 def compare_sales(df0, df_result):
-    for i in list(df_result.iloc[:, 1].drop_duplicates()):
+    for i in df_result.iloc[:, 1].drop_duplicates():
         df0 = df0.loc[df0.iloc[:, 2] == i]
         df_main0 = pd.merge(table_id(get_data(), *list(get_data().iloc[:, 0].drop_duplicates()), prm=1),
-                            df0, on='id',
+                            df0,
+                            on='id',
                             how='left',
                             suffixes=('_df1', '_df2')).fillna(0)
 
         df1 = df_result.loc[df_result.iloc[:, 1] == i]  # df for break point
         break_point = int(df1.iloc[:, 2])
 
+        sum_month = list()
+        y, m = max_year_month(df0)
+        for year in df_main0.iloc[:, 0].drop_duplicates():
+            df_year = df_main0.loc[(df_main0.iloc[:, 0] == year) & (df_main0.iloc[:, 1] <= m)]
+            sum_month.append(df_year.iloc[:, 6].tail(break_point).sum())
+
+        df1.copy()
+        df1['sales'] = sum_month[1]-sum_month[0]
+
+
         # df1 = df0.loc[(df0.iloc[:, 1].isin(list_mth)) & (df0.iloc[:, 2] == 'XXXGR18')]
-        print(df_main0)
+        print(df1)
         break
 
 
 print(
     compare_sales(get_data(), cumulative_slope_per_month(get_data(), 2019))
-    # cumulative_slope_per_month(get_data(), 2019)
-
+    #cumulative_slope_per_month(get_data(), 2019)
+    #get_data()
 )
 
 """
