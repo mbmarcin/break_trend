@@ -5,6 +5,7 @@ from statistics import mean
 def get_data(dir0="..\..\data_projects"):
     df0 = pd.read_excel(dir0 + "\\" + "tempTrendgrupa.xlsx")
     df0['id'] = df0.iloc[:, 0].astype('str') + df0.iloc[:, 1].astype('str')
+    df0.iloc[:, 2] = df0.iloc[:, 2].str.upper()
     # df0['id1'] = df0.iloc[:, 1]
     return df0
 
@@ -177,7 +178,7 @@ def compare_sales(df0, df_result):
 
         sum_month = list()
         for year in df_main0.iloc[:, 0].drop_duplicates():
-            df_year = df_main0.loc[(df_main0.iloc[:, 0] == year) & (df_main0.iloc[:, 1] <= 10)]
+            df_year = df_main0.loc[(df_main0.iloc[:, 0] == year) & (df_main0.iloc[:, 1] <= m)]
             sum_month.append(df_year.iloc[:, 6].tail(break_point).sum())
         #print(i, sum_month, break_point)
             print(df_year)
