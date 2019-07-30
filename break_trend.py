@@ -161,7 +161,7 @@ def cumulative_slope_per_month(df, year):
 
 def compare_sales(df0, df_result):
 
-    y, m = max_year_month(df0)
+    y, m = max_year_month(df0) # to może iść do ogółu
     list_df = list()
     for i in df_result.iloc[:, 1].drop_duplicates():
         df_n = df0.loc[df0.iloc[:, 2] == i]
@@ -174,20 +174,30 @@ def compare_sales(df0, df_result):
         df1 = df_result.loc[df_result.iloc[:, 1] == i]  # df for break point
         break_point = int(df1.iloc[:, 2])
 
-        sum_month = list()
 
+        sum_month = list()
         for year in df_main0.iloc[:, 0].drop_duplicates():
-            df_year = df_main0.loc[(df_main0.iloc[:, 0] == year) & (df_main0.iloc[:, 1] <= m)]
+            df_year = df_main0.loc[(df_main0.iloc[:, 0] == year) & (df_main0.iloc[:, 1] <= 10)]
             sum_month.append(df_year.iloc[:, 6].tail(break_point).sum())
+        #print(i, sum_month, break_point)
+            print(df_year)
+
+"""
+            if df_year.iloc[:,4].sum() > 0:
+                sum_month.append(df_year.iloc[:, 6].tail(break_point).sum())
+            else:
+                pass
+
         df_f = df1.copy()
         df_f['sales'] = sum_month[1]-sum_month[0]
+        else:
+            df_f['sales'] = 'empty previous year'
         list_df.append(df_f)
+        print(df_main0)#print(len(list_df))
+        break
 
-        # df1 = df0.loc[(df0.iloc[:, 1].isin(list_mth)) & (df0.iloc[:, 2] == 'XXXGR18')]
-        #print(df_result.iloc[:, 1].drop_duplicates())
-        #break
     return pd.concat(list_df)
-
+"""
 
 print(
     compare_sales(get_data(), cumulative_slope_per_month(get_data(), 2019))
