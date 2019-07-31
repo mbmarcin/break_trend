@@ -26,13 +26,13 @@ def slope_per_month(s):
     """
     input series object, output df with mc(index) and slope id
     """
-    target = list(s[:3])
+    target = list(s[:2])
     slope_ = list()
     slope_.append(best_fit_slope(pd.Series(target), list(range(len(target)))))
-    for i in s[3:]:
+    for i in s[2:]:
         target.append(i)
         slope_.append(best_fit_slope(pd.Series(target), list(range(len(target)))))
-    return pd.DataFrame({'mc_slope': slope_, 'mc': list(range(3, len(s) + 1))})
+    return pd.DataFrame({'mc_slope': slope_, 'mc': list(range(2, len(s) + 1))})
 
 
 def table_id(df, *year, prm=0):
@@ -90,7 +90,7 @@ def cumulative_slope_per_month(df, year):
     counter = list()
     all = len(df1.iloc[:, 2].drop_duplicates())
     for i in df1.iloc[:, 2].drop_duplicates():
-        if len(df1.loc[df1.iloc[:, 2] == i]) >= 3:  # 1.minimum 3 months activity
+        if len(df1.loc[df1.iloc[:, 2] == i]) >= 2:  # 1.minimum 2 months activity before 3 months
             df_main0 = pd.merge(table_id(df, year),
                                 df1.loc[df1.iloc[:, 2] == i],
                                 on='id',
@@ -108,7 +108,7 @@ def cumulative_slope_per_month(df, year):
 
             l_temp = list()
             for val in reverse.iloc[:len(reverse) - 2]:
-                if val < 0:
+                if val <= 0:
                     l_temp.append(val)
                 else:
                     break
@@ -138,7 +138,6 @@ def cumulative_slope_per_month(df, year):
                 pass
         else:
             pass
-
 
     # function for save tables
     """
@@ -175,49 +174,22 @@ def compare_sales(df0, df_result):
         df1 = df_result.loc[df_result.iloc[:, 1] == i]  # df for break point
         break_point = int(df1.iloc[:, 2])
 
-
         sum_month = list()
         for year in df_main0.iloc[:, 0].drop_duplicates():
             df_year = df_main0.loc[(df_main0.iloc[:, 0] == year) & (df_main0.iloc[:, 1] <= m)]
             sum_month.append(df_year.iloc[:, 6].tail(break_point).sum())
-        #print(i, sum_month, break_point)
-            print(df_year)
-
-"""
-            if df_year.iloc[:,4].sum() > 0:
-                sum_month.append(df_year.iloc[:, 6].tail(break_point).sum())
-            else:
-                pass
 
         df_f = df1.copy()
-        df_f['sales'] = sum_month[1]-sum_month[0]
-        else:
-            df_f['sales'] = 'empty previous year'
+        df_f['sales'] = sum_month[1] - sum_month[0]
         list_df.append(df_f)
-        print(df_main0)#print(len(list_df))
-        break
+        print(len(list_df))
+    to_file = pd.concat(list_df)
+    print('save a file')
+    return to_file.to_csv('brekTrendTEST.txt', sep=';', index=False, header=True)
 
-    return pd.concat(list_df)
-"""
 
 print(
     compare_sales(get_data(), cumulative_slope_per_month(get_data(), 2019))
     #cumulative_slope_per_month(get_data(), 2019)
     #get_data()
 )
-
-"""
-    df1 = df0.loc[df0.iloc[:, 0].isin([year_id, year_id-1])]
-    df2 = df1.loc[df1.iloc[:, 1].isin([list_id])]
-    x1 = 4
-    max_ = 7
-    for i in range((max_-x1),max_):
-    print(i)
-    df1 = df0.loc[(df0.iloc[:, 1].isin(list_mth)) & (df0.iloc[:, 2] == 'XXXGR18')]
-    # df1 = df1.loc[df1.grupoBRAND == 'XXXGR18']
-    df2 = df1.pivot_table(values='wart', index='mc', columns='rok').reset_index()
-    df2['diff_'] = round(df2.iloc[:, 2] / df2.iloc[:, 1] - 1, 2)
-    df2['diff'] = df2.iloc[:, 2] - df2.iloc[:, 1]
-    print(df2)
-    print(df1.iloc[:, 0].drop_duplicates())
-"""
