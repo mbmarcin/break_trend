@@ -42,16 +42,6 @@ print(
 )
 """
 
-"""
-def table_id(df, *year, prm=0):
-    if prm == 0:
-        temp = df.loc[df.iloc[:, 0].isin(year)].sort_values(by=[df.columns[0], df.columns[1]])
-        return temp.iloc[:, 4].drop_duplicates().to_frame()
-    else:
-        temp0 = df.iloc[:, [0, 1, 4]].drop_duplicates()
-        temp1 = temp0.loc[temp0.iloc[:, 0].isin(year)].sort_values(by=[temp0.columns[0], temp0.columns[1]])
-        return temp1.reset_index(drop=True)
-"""
 
 def table_id(df, *year):
     temp0 = df.iloc[:, [0, 1, 4]].drop_duplicates()
@@ -132,7 +122,6 @@ def check_trend(ss):
         return 0, 0, 0
 
 
-
 def cumulative_slope_per_month(df, year):
     """
     1.minimum 3 months activity
@@ -171,8 +160,6 @@ def cumulative_slope_per_month(df, year):
             '#check break trend'
             ser = df_main1.iloc[:, 7]
             a, b, c = check_trend(ser)
-
-            #print(i, a,  b, c)
 
             '#add row with result'
             result.loc[row] = [year, i, a, b, c, len(df1.loc[df1.iloc[:, 2] == i])]
