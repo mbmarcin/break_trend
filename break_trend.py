@@ -85,9 +85,7 @@ def slope_per_range(year=0):
 
 
 def check_trend(ss):
-    """
-    :param ss:
-    :return: slope length and slope deep
+    pass
     """
     revers = ss.iloc[::-1]
     if revers[len(revers)-1] < 0:
@@ -100,7 +98,7 @@ def check_trend(ss):
                 break
         '#check deeping'
         if len(l_temp) > 1:
-            ddp = [l_temp[i] < l_temp[i + 1] for i in range(len(l_temp)-1)]
+            ddp = [l_temp[i] < l_temp[i + 1] for i in range(len(l_temp)-1)] # sprawdzić dla wszystkich mc ujemne rosnąco
             return len(l_temp), int(ddp.count(True) == len(l_temp)-1), -1
         else:
             return len(l_temp), 0, -1
@@ -120,6 +118,19 @@ def check_trend(ss):
             return len(l_temp), 0, 1
     else:
         return 0, 0, 0
+"""
+
+def check_value(ss):
+    """
+    :param ss:
+    :return: True or False
+    """
+    revers = ss.iloc[::-1]
+
+    pass
+
+
+
 
 
 def cumulative_slope_per_month(df, year):
@@ -159,7 +170,9 @@ def cumulative_slope_per_month(df, year):
 
             '#check break trend'
             ser = df_main1.iloc[:, 7]
-            a, b, c = check_trend(ser)
+            a, b, c = check_trend(ser) # for all values
+
+
 
             '#add row with result'
             result.loc[row] = [year, i, a, b, c, len(df1.loc[df1.iloc[:, 2] == i])]
