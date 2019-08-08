@@ -84,53 +84,67 @@ def slope_per_range(year=0):
     return year
 
 
-def check_trend(ss):
-    pass
+def check_deep_trend(list_, prm):
     """
-    revers = ss.iloc[::-1]
-    if revers[len(revers)-1] < 0:
-        '#check trend minus'
-        l_temp = list()
-        for val in revers:
-            if val <= 0:
-                l_temp.append(val)
+    :param list_: list of ids trend
+    :param prm: parametr (0,1) for minus or plus trend
+    :return:
+    """
+    qty_mth_deep = list()
+    i = 0
+    prm2 = len(list_) - 1
+    if prm > 0:
+        while i < prm2:
+            if int(list_[i] > list_[i + 1]) == 1:
+                qty_mth_deep.append(1)
+                i += 1
             else:
                 break
-        '#check deeping'
-        if len(l_temp) > 1:
-            ddp = [l_temp[i] < l_temp[i + 1] for i in range(len(l_temp)-1)] # sprawdzić dla wszystkich mc ujemne rosnąco
-            return len(l_temp), int(ddp.count(True) == len(l_temp)-1), -1
-        else:
-            return len(l_temp), 0, -1
-    elif revers[len(revers)-1] > 0:
-        '#check trend plus'
-        l_temp = list()
-        for val in revers:
-            if val > 0:
-                l_temp.append(val)
-            else:
-                break
-        '#check deeping'
-        if len(l_temp) > 1:
-            ddp = [l_temp[i] > l_temp[i + 1] for i in range(len(l_temp)-1)]
-            return len(l_temp), int(ddp.count(True) == len(l_temp)-1), 1
-        else:
-            return len(l_temp), 0, 1
     else:
-        return 0, 0, 0
-"""
+        while i < prm2:
+            if int(list_[i] < list_[i + 1]) == 1:
+                qty_mth_deep.append(1)
+                i += 1
+            else:
+                break
+    return len(qty_mth_deep)
 
-def check_value(ss):
+
+def check_series_trend(ss):
     """
     :param ss:
-    :return: True or False
+    :return: parameters of trend
     """
     revers = ss.iloc[::-1]
+    qty_mth_trend = list()
 
-    pass
+    '#check trend minus'
+    if revers[len(revers)-1] < 0:
+        for val in revers:
+            if val <= 0:
+                qty_mth_trend.append(val)
+            else:
+                break
 
+        a = check_deep_trend(qty_mth_trend, 0)
+        b = check_deep_trend(qty_mth_trend, 1)
+        c = len(qty_mth_trend)
 
+        return c*-1, a, b
 
+    else:
+        if revers[len(revers) - 1] > 0:
+            for val in revers:
+                if val > 0:
+                    qty_mth_trend.append(val)
+                else:
+                    break
+
+        a = check_deep_trend(qty_mth_trend, 0)
+        b = check_deep_trend(qty_mth_trend, 1)
+        c = len(qty_mth_trend)
+
+        return c, a, b
 
 
 def cumulative_slope_per_month(df, year):
@@ -144,7 +158,7 @@ def cumulative_slope_per_month(df, year):
     df1 = df.loc[df.iloc[:, 0] == year].sort_values(by=[df.columns[0], df.columns[1]])
 
     #tt = list()  # table with all slops
-    result = pd.DataFrame(columns=('year', 'id', 'break_point', 'deep', 'slope', 'activity'))
+    result = pd.DataFrame(columns=('year', 'id', 'break_point', 'falling', 'increasing', 'activity'))
     row = 0
     counter = list()
     all = len(df1.iloc[:, 2].drop_duplicates())
@@ -170,9 +184,7 @@ def cumulative_slope_per_month(df, year):
 
             '#check break trend'
             ser = df_main1.iloc[:, 7]
-            a, b, c = check_trend(ser) # for all values
-
-
+            a, b, c = check_series_trend(ser) # for all values
 
             '#add row with result'
             result.loc[row] = [year, i, a, b, c, len(df1.loc[df1.iloc[:, 2] == i])]
