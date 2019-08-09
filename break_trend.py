@@ -147,6 +147,20 @@ def check_series_trend(ss):
         return c, a, b
 
 
+def check_empty_months(series):
+
+    qty_empty_mth = list()
+    i = 0
+    list_ = list(series[::-1])
+    while i < len(series[::-1]) - 1:
+        if list_[i] == 0:
+            qty_empty_mth.append(1)
+            i += 1
+        else:
+            break
+    return len(qty_empty_mth)
+
+
 def cumulative_slope_per_month(df, year):
     """
     1.minimum 3 months activity
@@ -158,7 +172,7 @@ def cumulative_slope_per_month(df, year):
     df1 = df.loc[df.iloc[:, 0] == year].sort_values(by=[df.columns[0], df.columns[1]])
 
     #tt = list()  # table with all slops
-    result = pd.DataFrame(columns=('year', 'id', 'break_point', 'falling', 'increasing', 'activity'))
+    result = pd.DataFrame(columns=('year', 'id', 'break_point', 'falling', 'increasing', 'activity', 'empty_mth'))
     row = 0
     counter = list()
     all = len(df1.iloc[:, 2].drop_duplicates())
@@ -172,7 +186,6 @@ def cumulative_slope_per_month(df, year):
                                 suffixes=('_df1', '_df2')).fillna(0)
 
             col = df_main0.columns[1]
-
             df_main1 = pd.merge(df_main0,
                                 slope_per_month(df_main0.iloc[:, 6], col),
                                 on=col,
@@ -183,14 +196,14 @@ def cumulative_slope_per_month(df, year):
             #tt.append(df_main1.iloc[:, [3, 5]]) #----------------------------------------------------------------------look at this
 
             '#check break trend'
-            ser = df_main1.iloc[:, 7]
-            a, b, c = check_series_trend(ser) # for all values
+            a, b, c = check_series_trend(df_main1.iloc[:, 7]) # for all values
+            empty_m = check_empty_months(df_main1.iloc[:, 6])
 
             '#add row with result'
-            result.loc[row] = [year, i, a, b, c, len(df1.loc[df1.iloc[:, 2] == i])]
+            result.loc[row] = [year, i, a, b, c, len(df1.loc[df1.iloc[:, 2] == i]), empty_m]
             row += 1
             counter.append(i)
-            print(df_main1)
+            #print(df_main1)
 
             '#print progress'
             if len(counter) % 10 == 0:
