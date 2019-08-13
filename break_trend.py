@@ -83,13 +83,8 @@ def to_save(*l):
 def slope_per_range(year=0):
     return year
 
-
+"""
 def check_deep_trend(list_, prm):
-    """
-    :param list_: list of ids trend
-    :param prm: parametr (0,1) for minus or plus trend
-    :return:
-    """
     qty_mth_deep = list()
     i = 0
     prm2 = len(list_) - 1
@@ -108,14 +103,43 @@ def check_deep_trend(list_, prm):
             else:
                 break
     return len(qty_mth_deep)
+"""
 
 
-def check_series_trend(ss):
+def check_deep_trend(list_slope, list_sales):
     """
-    :param ss:
+    :param list_slope: list of ids trend
+    :param list_sales: sales
+    :return:
+    """
+    #qty_mth_deep_plus = list()
+    qty_mth_deep_minus = list()
+    #change_of_scale = list()
+    i = 0
+    prm2 = len(list_slope) - 1
+
+    while i < prm2:
+        if int(list_slope[i] < list_slope[i + 1]) == 1:
+            qty_mth_deep_minus.append(1)
+            i += 1
+        elif int(list_slope[i] < list_slope[i + 1]) == 0 and int(list_sales[i] < list_sales[i + 1]) == 1:
+            qty_mth_deep_minus.append(1)
+            #change_of_scale.append(1)
+            i += 1
+        else:
+            break
+
+    return len(qty_mth_deep_minus)
+
+
+def check_series_trend(list_slope, list_sales):
+    """
+    :param list_slope:
+    :param list_sales:
     :return: parameters of trend
     """
-    revers = ss.iloc[::-1]
+    revers = list_slope.iloc[::-1]
+    revers_s = list_sales.iloc[::-1]
     qty_mth_trend = list()
 
     '#check trend minus'
@@ -126,25 +150,28 @@ def check_series_trend(ss):
             else:
                 break
 
-        a = check_deep_trend(qty_mth_trend, 0)
-        b = check_deep_trend(qty_mth_trend, 1)
+        m = check_deep_trend(list(qty_mth_trend), list(revers_s))
+        #qty_mth_deep1, change_of_scale1 = check_deep_trend(qty_mth_trend, revers_s, 1)
         c = len(qty_mth_trend)
 
-        return c*-1, a, b
+        return c*-1, m*-1
+
+    elif revers[len(revers) - 1] > 0:
+        for val in revers:
+            if val > 0:
+                qty_mth_trend.append(val)
+            else:
+                break
+
+        #qty_mth_deep0, change_of_scale0 = check_deep_trend(qty_mth_trend, revers_s, 0)
+        m = check_deep_trend(list(qty_mth_trend), list(revers_s))
+        c = len(qty_mth_trend)
+
+        return c, m*-1
 
     else:
-        if revers[len(revers) - 1] > 0:
-            for val in revers:
-                if val > 0:
-                    qty_mth_trend.append(val)
-                else:
-                    break
+        return 0, 0
 
-        a = check_deep_trend(qty_mth_trend, 0)
-        b = check_deep_trend(qty_mth_trend, 1)
-        c = len(qty_mth_trend)
-
-        return c, a, b
 
 
 def check_empty_months(series):
@@ -168,14 +195,13 @@ def cumulative_slope_per_month(df, year):
     :param year: int
     :return: df
     """
-
     df1 = df.loc[df.iloc[:, 0] == year].sort_values(by=[df.columns[0], df.columns[1]])
 
-    #tt = list()  # table with all slops
-    result = pd.DataFrame(columns=('year', 'id', 'break_point', 'falling', 'increasing', 'activity', 'empty_mth'))
+    tt = list()  # table with all slops
+    result = pd.DataFrame(columns=('year', 'id', 'break_point', 'dir_m', 'activity', 'empty_mth'))
     row = 0
     counter = list()
-    all = len(df1.iloc[:, 2].drop_duplicates())
+    all_ = len(df1.iloc[:, 2].drop_duplicates())
     for i in df1.iloc[:, 2].drop_duplicates():
         if len(df1.loc[df1.iloc[:, 2] == i]) >= 2:  # 1.minimum 2 months activity before 3 months
 
@@ -192,38 +218,53 @@ def cumulative_slope_per_month(df, year):
                                 how='left',
                                 suffixes=('_df1', '_df2')).fillna(0)
 
-
-            #tt.append(df_main1.iloc[:, [3, 5]]) #----------------------------------------------------------------------look at this
+            tt.append(df_main1.iloc[:, [0, 1, 5, 7]]) #---------------------------------------look at this
 
             '#check break trend'
-            a, b, c = check_series_trend(df_main1.iloc[:, 7]) # for all values
+            trend, dir_minus = check_series_trend(df_main1.iloc[:, 7], df_main1.iloc[:, 6]) # for all values
+            #a, b, c, d, e = check_series_trend(df_main1.iloc[:, 7], df_main1.iloc[:, 6])  # for all values
+
             empty_m = check_empty_months(df_main1.iloc[:, 6])
 
             '#add row with result'
-            result.loc[row] = [year, i, a, b, c, len(df1.loc[df1.iloc[:, 2] == i]), empty_m]
+            result.loc[row] = [year, i, trend, dir_minus, len(df1.loc[df1.iloc[:, 2] == i]), empty_m]
             row += 1
             counter.append(i)
-            #print(df_main1)
+
+
+            """
+            if trend > 0:
+                '#add row with result'
+                result.loc[row] = [year, i, trend, qty_mth_deep0, change_of_scale0, len(df1.loc[df1.iloc[:, 2] == i]), empty_m]
+                row += 1
+                counter.append(i)
+                #print(df_main1)
+
+            else:
+                '#add row with result'
+                result.loc[row] = [year, i, trend, qty_mth_deep1, change_of_scale1, len(df1.loc[df1.iloc[:, 2] == i]), empty_m]
+                row += 1
+                counter.append(i)
+                #print(df_main1)
+            """
 
             '#print progress'
             if len(counter) % 10 == 0:
-                print('Trend analysis: {}/{}'.format(len(counter), all))
+                print('Trend analysis: {}/{}'.format(len(counter), all_))
             else:
                 pass
+
+            #print(i, trend, qty_mth_deep0, change_of_scale0, qty_mth_deep1, change_of_scale1, empty_m)
         else:
             pass
-
-    return result
+    #all_slopes = pd.concat(tt)
+    #all_slopes.to_csv('allSlops_TEST.txt', sep=';', index=False, header=True)
+    return result.to_csv('brekTrendTEST.txt', sep=';', index=False, header=True)
 
 """ if który sprawdza czy jest poprzedni rok ------------------------------------------------------
-    if df0.loc[df0.iloc[:, 0].isin([year_id-1])].empty is True:
-        print('missing the previous year')
-    else:
-        df1 = df0.loc[df0.iloc[:, 0].isin([year_id, year_id-1])]
 """
 
 def compare_sales(df0, df_result):
-
     y, m = max_year_month(df0) # to może iść do ogółu
     list_df = list()
     for i in df_result.iloc[:, 1].drop_duplicates():
