@@ -110,7 +110,7 @@ def check_deep_trend(list_slope, list_sales):
     """
     :param list_slope: list of ids trend
     :param list_sales: sales
-    :return:
+    :return: falling
     """
     #qty_mth_deep_plus = list()
     qty_mth_deep_minus = list()
