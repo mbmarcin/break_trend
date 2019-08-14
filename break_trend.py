@@ -3,11 +3,14 @@ from statistics import mean
 
 
 def get_data(dir0="..\..\data_projects"):
-    df0 = pd.read_excel(dir0 + "\\" + "tempTrendgrupa.xlsx")
-    df0['id'] = df0.iloc[:, 0].astype('str') + df0.iloc[:, 1].astype('str')
-    df0.iloc[:, 2] = df0.iloc[:, 2].str.upper()
-    # df0['id1'] = df0.iloc[:, 1]
-    return df0
+    try:
+        df0 = pd.read_excel(dir0 + "\\" + "tempTrendgrupa.xlsx")
+        df0['id'] = df0.iloc[:, 0].astype('str') + df0.iloc[:, 1].astype('str')
+        df0.iloc[:, 2] = df0.iloc[:, 2].str.upper()
+        return df0
+    except IOError:
+        print('Nie mogę wczytać danych, sprawdź plik.')
+        return pd.DataFrame()
 
 
 def best_fit_slope(xs, ys):
@@ -34,26 +37,12 @@ def slope_per_month(s, col):
         slope_.append(best_fit_slope(pd.Series(target), list(range(len(target)))))
     return pd.DataFrame({'mc_slope': slope_, col: list(range(2, len(s) + 1))})
 
-# test slope
-"""
-x = [5,8,2,1,7,9,7,6]
-print(
-    slope_per_month(pd.Series(x), 'col').info()
-)
-"""
-
 
 def table_id(df, *year):
     temp0 = df.iloc[:, [0, 1, 4]].drop_duplicates()
     temp1 = temp0.loc[temp0.iloc[:, 0].isin(year)].sort_values(by=[temp0.columns[0], temp0.columns[1]])
     return temp1.reset_index(drop=True)
 
-# test table id
-"""
-print(
-table_id(get_data(), 2019)
-)
-"""
 
 def max_year_month(df):
     """
@@ -66,44 +55,8 @@ def max_year_month(df):
     return max_year, max_year_month1
 
 
-def to_save(*l):
-    for i in l:
-        i.name = i
-        i.to_csv('{}.txt'.format(i.name), sep=';', index=False, header=True)
-        # print('save {}'.format(i))
-        """
-        def write_csv():
-        df2 = pd.DataFrame()
-        for name, df in data.items():
-        df2 = df2.append(df)
-        df2.to_csv('mydf.csv')
-        """
-
-
 def slope_per_range(year=0):
     return year
-
-"""
-def check_deep_trend(list_, prm):
-    qty_mth_deep = list()
-    i = 0
-    prm2 = len(list_) - 1
-    if prm > 0:
-        while i < prm2:
-            if int(list_[i] > list_[i + 1]) == 1:
-                qty_mth_deep.append(1)
-                i += 1
-            else:
-                break
-    else:
-        while i < prm2:
-            if int(list_[i] < list_[i + 1]) == 1:
-                qty_mth_deep.append(1)
-                i += 1
-            else:
-                break
-    return len(qty_mth_deep)
-"""
 
 
 def check_deep_trend(list_slope, list_sales):
@@ -112,9 +65,7 @@ def check_deep_trend(list_slope, list_sales):
     :param list_sales: sales
     :return: falling
     """
-    #qty_mth_deep_plus = list()
     qty_mth_deep_minus = list()
-    #change_of_scale = list()
     i = 0
     prm2 = len(list_slope) - 1
 
@@ -124,7 +75,6 @@ def check_deep_trend(list_slope, list_sales):
             i += 1
         elif int(list_slope[i] < list_slope[i + 1]) == 0 and int(list_sales[i] < list_sales[i + 1]) == 1:
             qty_mth_deep_minus.append(1)
-            #change_of_scale.append(1)
             i += 1
         else:
             break
@@ -151,7 +101,6 @@ def check_series_trend(list_slope, list_sales):
                 break
 
         m = check_deep_trend(list(qty_mth_trend), list(revers_s))
-        #qty_mth_deep1, change_of_scale1 = check_deep_trend(qty_mth_trend, revers_s, 1)
         c = len(qty_mth_trend)
 
         return c*-1, m*-1
@@ -162,8 +111,6 @@ def check_series_trend(list_slope, list_sales):
                 qty_mth_trend.append(val)
             else:
                 break
-
-        #qty_mth_deep0, change_of_scale0 = check_deep_trend(qty_mth_trend, revers_s, 0)
         m = check_deep_trend(list(qty_mth_trend), list(revers_s))
         c = len(qty_mth_trend)
 
@@ -171,7 +118,6 @@ def check_series_trend(list_slope, list_sales):
 
     else:
         return 0, 0
-
 
 
 def check_empty_months(series):
@@ -190,10 +136,10 @@ def check_empty_months(series):
 
 def cumulative_slope_per_month(df, year):
     """
-    1.minimum 3 months activity
-    :param df: df
-    :param year: int
-    :return: df
+    1.minimum 2 months activity
+    :param df: df0 input data
+    :param year: int year to analysis
+    :return: save data slops, result and return result
     """
     df1 = df.loc[df.iloc[:, 0] == year].sort_values(by=[df.columns[0], df.columns[1]])
 
@@ -218,12 +164,10 @@ def cumulative_slope_per_month(df, year):
                                 how='left',
                                 suffixes=('_df1', '_df2')).fillna(0)
 
-            tt.append(df_main1.iloc[:, [0, 1, 5, 7]]) #---------------------------------------look at this
+            tt.append(df_main1.iloc[:, [0, 1, 5, 7]])
 
             '#check break trend'
-            trend, dir_minus = check_series_trend(df_main1.iloc[:, 7], df_main1.iloc[:, 6]) # for all values
-            #a, b, c, d, e = check_series_trend(df_main1.iloc[:, 7], df_main1.iloc[:, 6])  # for all values
-
+            trend, dir_minus = check_series_trend(df_main1.iloc[:, 7], df_main1.iloc[:, 6])
             empty_m = check_empty_months(df_main1.iloc[:, 6])
 
             '#add row with result'
@@ -231,35 +175,19 @@ def cumulative_slope_per_month(df, year):
             row += 1
             counter.append(i)
 
-
-            """
-            if trend > 0:
-                '#add row with result'
-                result.loc[row] = [year, i, trend, qty_mth_deep0, change_of_scale0, len(df1.loc[df1.iloc[:, 2] == i]), empty_m]
-                row += 1
-                counter.append(i)
-                #print(df_main1)
-
-            else:
-                '#add row with result'
-                result.loc[row] = [year, i, trend, qty_mth_deep1, change_of_scale1, len(df1.loc[df1.iloc[:, 2] == i]), empty_m]
-                row += 1
-                counter.append(i)
-                #print(df_main1)
-            """
-
             '#print progress'
             if len(counter) % 10 == 0:
                 print('Trend analysis: {}/{}'.format(len(counter), all_))
             else:
                 pass
 
-            #print(i, trend, qty_mth_deep0, change_of_scale0, qty_mth_deep1, change_of_scale1, empty_m)
         else:
             pass
-    #all_slopes = pd.concat(tt)
-    #all_slopes.to_csv('allSlops_TEST.txt', sep=';', index=False, header=True)
-    return result.to_csv('brekTrendTEST.txt', sep=';', index=False, header=True)
+    all_slopes = pd.concat(tt)
+    all_slopes.to_csv('allSlops.txt', sep=';', index=False, header=True)
+    result.to_csv('brekTrend.txt', sep=';', index=False, header=True)
+    print('files saved: allSlops.txt, brekTrend.txt')
+    return result
 
 """ if który sprawdza czy jest poprzedni rok ------------------------------------------------------
 """
@@ -280,7 +208,7 @@ def compare_sales(df0, df_result):
 
         sum_month = list()
         for year in df_main0.iloc[:, 0].drop_duplicates():
-            df_year = df_main0.loc[(df_main0.iloc[:, 0] == year) & (df_main0.iloc[:, 1] <= m)]
+            df_year = df_main0.loc[(df_main0.iloc[:, 0] == year) & (df_main0.iloc[:, 1] <= m)] #-------!!!!!!!!!!!!!!!!!!!!!
             sum_month.append(df_year.iloc[:, 6].tail(break_point).sum())
 
         df_f = df1.copy()
@@ -292,9 +220,42 @@ def compare_sales(df0, df_result):
     return to_file #to_file.to_csv('brekTrendTEST.txt', sep=';', index=False, header=True)
 
 
-print(
+def main():
+    print("Wczytuje dane...")
+    df0 = get_data()
+    if df0.empty is False:
+        years = list(df0.iloc[:, 0].drop_duplicates())
+        print("Dostępne lata do analizy: {}".format(years))
+        y = input('Dla którego roku zbadać nachylenie?:')
+
+        try:
+            cumulative_slope_per_month(df0, int(y))
+        except ValueError:
+            print("Wpisz odpowiedni rok i spróbuj ponowanie")
+
+        q = input("Czy porównać wartościowo rok poprzedni do nachyleń:")
+        if q == 't' or q == 'y':
+            pass
+        else:
+            print("koniec")
+
+
+
+    else:
+        pass
+
+
+
+    #get_data().iloc[:, 0].drop_duplicates()
+    #pass
+
+
+
+
+#print(
     #compare_sales(get_data(), cumulative_slope_per_month(get_data(), 2019))
-    cumulative_slope_per_month(get_data(), 2019)
+#cumulative_slope_per_month(get_data(), 2019)
     #table_id(get_data(), 2019)
-    #get_data()
-)
+    #
+main()
+#)
