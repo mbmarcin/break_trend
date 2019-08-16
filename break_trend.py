@@ -4,7 +4,7 @@ from statistics import mean
 
 def get_data(dir0="..\..\data_projects"):
     try:
-        df0 = pd.read_excel(dir0 + "\\" + "tempTrendgrupa.xlsx")
+        df0 = pd.read_csv(dir0 + "\\" + "tempTrendgrupa.txt", sep=';')
         df0['id'] = df0.iloc[:, 0].astype('str') + df0.iloc[:, 1].astype('str')
         df0.iloc[:, 2] = df0.iloc[:, 2].str.upper()
         return df0
@@ -180,24 +180,23 @@ def cumulative_slope_per_month(df, year):
                 print('Trend analysis: {}/{}'.format(len(counter), all_))
             else:
                 pass
-
         else:
             pass
     all_slopes = pd.concat(tt)
     all_slopes.to_csv('allSlops.txt', sep=';', index=False, header=True)
-    result.to_csv('brekTrend.txt', sep=';', index=False, header=True)
-    print('files saved: allSlops.txt, brekTrend.txt')
+    result.to_csv('breakTrend.txt', sep=';', index=False, header=True)
+    print('files saved: allSlops.txt, breakTrend.txt')
     return result
 
-""" if który sprawdza czy jest poprzedni rok ------------------------------------------------------
-"""
 
 def compare_sales(df0, df_result):
-    y, m = max_year_month(df0) # to może iść do ogółu
+    y, m = max_year_month(df0)
     list_df = list()
+    all_ = len(list(df_result.iloc[:, 1].drop_duplicates()))
+    #tempL = list(['GR22AKA'])
     for i in df_result.iloc[:, 1].drop_duplicates():
         df_n = df0.loc[df0.iloc[:, 2] == i]
-        df_main0 = pd.merge(table_id(get_data(), *list(get_data().iloc[:, 0].drop_duplicates())),
+        df_main0 = pd.merge(table_id(df0, *list(df0.iloc[:, 0].drop_duplicates())),
                             df_n,
                             on='id',
                             how='left',
@@ -208,17 +207,20 @@ def compare_sales(df0, df_result):
 
         sum_month = list()
         for year in df_main0.iloc[:, 0].drop_duplicates():
-            df_year = df_main0.loc[(df_main0.iloc[:, 0] == year) & (df_main0.iloc[:, 1] <= m)] #-------!!!!!!!!!!!!!!!!!!!!!
-            sum_month.append(df_year.iloc[:, 6].tail(break_point).sum())
-
+            df_year = df_main0.loc[(df_main0.iloc[:, 0] == year) & (df_main0.iloc[:, 1] <= m)]
+            sum_month.append(df_year.iloc[:, 6].tail(abs(break_point)).sum())
         df_f = df1.copy()
         df_f['sales'] = sum_month[1] - sum_month[0]
         list_df.append(df_f)
-        print(len(list_df))
-    to_file = pd.concat(list_df)
-    print('save a file')
-    return to_file #to_file.to_csv('brekTrendTEST.txt', sep=';', index=False, header=True)
 
+        '#print progress'
+        if len(list_df) % 10 == 0:
+            print('Sales analysis: {}/{}'.format(len(list_df), all_))
+        else:
+            pass
+    to_file = pd.concat(list_df)
+    print('saving a file breakTrend')
+    return to_file.to_csv('breakTrend.txt', sep=';', index=False, header=True)
 
 def main():
     print("Wczytuje dane...")
@@ -226,21 +228,24 @@ def main():
     if df0.empty is False:
         years = list(df0.iloc[:, 0].drop_duplicates())
         print("Dostępne lata do analizy: {}".format(years))
-        y = input('Dla którego roku zbadać nachylenie?:')
+        y = input('Dla którego roku zbadać dane?: ')
 
         try:
-            cumulative_slope_per_month(df0, int(y))
+            slops = cumulative_slope_per_month(df0, int(y))
+            ay = int(y)
         except ValueError:
             print("Wpisz odpowiedni rok i spróbuj ponowanie")
 
-        q = input("Czy porównać wartościowo rok poprzedni do nachyleń:")
-        if q == 't' or q == 'y':
-            pass
+        if ay > 0 and min(years) == ay-1:
+            q = input('Czy porównać sprzedaż dla tabeli trendów: ')
+
+            if q == 't' or q == 'y':
+                compare_sales(df0, slops)
+                print("end")
+            else:
+                print("end")
         else:
-            print("koniec")
-
-
-
+            print("Data is missing a year back to compare sales.")
     else:
         pass
 
@@ -256,6 +261,6 @@ def main():
     #compare_sales(get_data(), cumulative_slope_per_month(get_data(), 2019))
 #cumulative_slope_per_month(get_data(), 2019)
     #table_id(get_data(), 2019)
-    #
 main()
+#print(get_data())
 #)
