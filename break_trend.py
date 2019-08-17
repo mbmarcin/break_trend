@@ -67,7 +67,7 @@ def check_deep_trend(list_slope, list_sales):
     """
     qty_mth_deep_minus = list()
     i = 0
-    prm2 = len(list_slope) - 1
+    prm2 = len(list_slope)-1
 
     while i < prm2:
         if int(list_slope[i] < list_slope[i + 1]) == 1:
@@ -223,46 +223,30 @@ def compare_sales(df0, df_result):
     return to_file  #.to_csv('breakTrend.txt', sep=';', index=False, header=True)
 
 
+def get_sales_shares(df_, y):
 
+    def add_prop(df_):
+        df_['prop'] = (df_.iloc[:, 3] / df_.iloc[:, 3].sum())*100
+        return df_
 
-
-def get_sales_shares(df):
-
-    def add_prop(df):
-        df['prop'] = (df.iloc[:, 3] / df.iloc[:, 3].sum())*100
-        return df
-
-    def add_cumsum(df):
-        df['cumsum'] = df.sort_values(by=['prop'], ascending=False).prop.cumsum()
-        return df
+    def add_cumsum(df_):
+        df_['cumsum'] = df_.sort_values(by=['prop'], ascending=False).prop.cumsum()
+        return df_
 
     get_group = lambda x: x[:4]
-    df['gr'] = df.iloc[:, 2].map(get_group)
+    df_['gr'] = df_.iloc[:, 2].map(get_group)
 
-    sum_by_year = df.iloc[:, 3].groupby([df.iloc[:, 0], df.iloc[:, 2], df.iloc[:, 5]]).sum().reset_index()#.sort_values(by=['rok', 'wartSpr'], ascending=False)
+    sum_by_year = df_.iloc[:, 3].groupby([df_.iloc[:, 0], df_.iloc[:, 2], df_.iloc[:, 5]]).sum().reset_index()
+    year = sum_by_year.loc[sum_by_year.iloc[:, 0] == y]
+    grouped = year.groupby(['gr', year.iloc[:, 0]]).apply(add_prop).fillna(0)
+    grouped_ = grouped.groupby(['gr', year.iloc[:, 0]]).apply(add_cumsum)
 
-    #year = sum_by_year.loc[(sum_by_year.rok == 2019) & (sum_by_year.gr == 'GR18') ]
-    grouped = sum_by_year.groupby(['gr', 'rok']).apply(add_prop).fillna(0)
-    grouped_ = grouped.groupby(['gr', 'rok']).apply(add_cumsum)
-    #xx = grouped.sort_values(by=['rok', 'wartSpr', 'gr'], ascending=False)
-
-    #print(grouped_.iloc[:, [4, 5]])
-    return grouped_.iloc[:, [4, 5]]
-
-
-
-slops = cumulative_slope_per_month(get_data(), 2019)
-cs = compare_sales(get_data(), slops)
-
-print(
-cs.head()
-)
+    return grouped_.iloc[:, [0, 1, 4, 5]]
 
 """
 funkcja która analizuje trend z całego okresu
 
 """
-
 
 
 
@@ -276,6 +260,47 @@ def main():
         print("Dostępne lata do analizy: {}".format(years))
         y = input('Dla którego roku zbadać dane?: ')
 
+        try:
+            if int(y) > 0 and min(years) == int(y) - 1:
+
+                slops = cumulative_slope_per_month(get_data(), int(y))
+                cs = compare_sales(get_data(), slops)
+
+                print('Analizuje udziały sprzedaży grupobrendów w grupie...')
+                col = cs.columns[1]
+                sh = get_sales_shares(df0, int(y))
+                sh.columns = sh.columns.str.replace(sh.columns[1], col)
+                df1 = pd.merge(cs, sh, on=col, how='left', suffixes=('_df1', '_df2'))
+
+                print(df1.head())
+
+
+            else:
+                print("Źle wpisany rok lub brak poprzedniego roku do porównania.")
+
+        except ValueError:
+            print("Wpisz odpowiedni rok i spróbuj ponowanie")
+
+    else:
+        pass
+
+    print('koniec')
+
+
+main()
+
+
+"""
+                        print(cs.head())
+
+                        df_main0 = pd.merge(table_id(df0, *list(df0.iloc[:, 0].drop_duplicates())),
+                                            df_n,
+                                            on='id',
+                                            how='left',
+                                            suffixes=('_df1', '_df2')).fillna(0)
+"""
+
+"""
         try:
             slops = cumulative_slope_per_month(df0, int(y))
             ay = int(y)
@@ -292,21 +317,5 @@ def main():
                 print("end")
         else:
             print("Data is missing a year back to compare sales.")
-    else:
-        pass
+"""
 
-
-
-    #get_data().iloc[:, 0].drop_duplicates()
-    #pass
-
-
-
-
-#print(
-    #compare_sales(get_data(), cumulative_slope_per_month(get_data(), 2019))
-#cumulative_slope_per_month(get_data(), 2019)
-    #table_id(get_data(), 2019)
-#main()
-#print(get_data())
-#)
