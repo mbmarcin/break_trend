@@ -95,7 +95,7 @@ def check_series_trend(list_slope, list_sales):
     '#check trend minus'
     if revers[len(revers)-1] < 0:
         for val in revers:
-            if val <= 0:
+            if val < 0: # for equal is one month plus
                 qty_mth_trend.append(val)
             else:
                 break
@@ -219,8 +219,54 @@ def compare_sales(df0, df_result):
         else:
             pass
     to_file = pd.concat(list_df)
-    print('saving a file breakTrend')
-    return to_file.to_csv('breakTrend.txt', sep=';', index=False, header=True)
+    #print('saving a file breakTrend')
+    return to_file  #.to_csv('breakTrend.txt', sep=';', index=False, header=True)
+
+
+
+
+
+def get_sales_shares(df):
+
+    def add_prop(df):
+        df['prop'] = (df.iloc[:, 3] / df.iloc[:, 3].sum())*100
+        return df
+
+    def add_cumsum(df):
+        df['cumsum'] = df.sort_values(by=['prop'], ascending=False).prop.cumsum()
+        return df
+
+    get_group = lambda x: x[:4]
+    df['gr'] = df.iloc[:, 2].map(get_group)
+
+    sum_by_year = df.iloc[:, 3].groupby([df.iloc[:, 0], df.iloc[:, 2], df.iloc[:, 5]]).sum().reset_index()#.sort_values(by=['rok', 'wartSpr'], ascending=False)
+
+    #year = sum_by_year.loc[(sum_by_year.rok == 2019) & (sum_by_year.gr == 'GR18') ]
+    grouped = sum_by_year.groupby(['gr', 'rok']).apply(add_prop).fillna(0)
+    grouped_ = grouped.groupby(['gr', 'rok']).apply(add_cumsum)
+    #xx = grouped.sort_values(by=['rok', 'wartSpr', 'gr'], ascending=False)
+
+    #print(grouped_.iloc[:, [4, 5]])
+    return grouped_.iloc[:, [4, 5]]
+
+
+
+slops = cumulative_slope_per_month(get_data(), 2019)
+cs = compare_sales(get_data(), slops)
+
+print(
+cs.head()
+)
+
+"""
+funkcja która analizuje trend z całego okresu
+
+"""
+
+
+
+
+
 
 def main():
     print("Wczytuje dane...")
@@ -261,6 +307,6 @@ def main():
     #compare_sales(get_data(), cumulative_slope_per_month(get_data(), 2019))
 #cumulative_slope_per_month(get_data(), 2019)
     #table_id(get_data(), 2019)
-main()
+#main()
 #print(get_data())
 #)
