@@ -303,6 +303,5 @@ def main():
 
 print(main())
 
-#print(x.loc[x.id == 'GR01LGE'])
 
 
