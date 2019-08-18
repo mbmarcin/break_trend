@@ -31,10 +31,11 @@ def slope_per_month(s, col):
     """
     target = list(s[:2])
     slope_ = list()
-    slope_.append(best_fit_slope(pd.Series(target), list(range(len(target)))))
+    slope_.append(best_fit_slope(pd.Series(target), list(range(1, len(target)+1))))
+
     for i in s[2:]:
         target.append(i)
-        slope_.append(best_fit_slope(pd.Series(target), list(range(len(target)))))
+        slope_.append(best_fit_slope(pd.Series(target), list(range(1, len(target)+1))))
     return pd.DataFrame({'mc_slope': slope_, col: list(range(2, len(s) + 1))})
 
 
@@ -55,8 +56,27 @@ def max_year_month(df):
     return max_year, max_year_month1
 
 
-def slope_per_range(year=0):
-    return year
+def slope_whole_range(df, *ids_list):
+    """
+    :param df:
+    :param ids_list:
+    :return: df
+    """
+    mainl = list()
+    all_ = len(ids_list)
+    for i in ids_list:
+        df1 = df.loc[df.iloc[:, 2] == i].sort_values(by=[df.columns[0], df.columns[1]])
+        dfm = pd.merge(table_id(df, *list(df.iloc[:, 0].drop_duplicates())), df1, on='id', how='left',
+                       suffixes=('_df1', '_df2')).fillna(0)
+        mainl.append((i, best_fit_slope(dfm.iloc[:, 6], list(range(1, len(dfm.iloc[:, 1])+1)))))
+
+        '#print progress'
+        if len(mainl) % 50 == 0:
+            print('Trend analysis for whole range {}: {}/{}'.format(list(df.iloc[:, 0].drop_duplicates()),
+                                                                    len(mainl), all_))
+        else:
+            pass
+    return pd.DataFrame(mainl, columns=['id', 'slope_whole_range'])
 
 
 def check_deep_trend(list_slope, list_sales):
@@ -176,16 +196,16 @@ def cumulative_slope_per_month(df, year):
             counter.append(i)
 
             '#print progress'
-            if len(counter) % 10 == 0:
-                print('Trend analysis: {}/{}'.format(len(counter), all_))
+            if len(counter) % 50 == 0:
+                print('Analysis trends for break point (year): {}/{}'.format(len(counter), all_))
             else:
                 pass
         else:
             pass
     all_slopes = pd.concat(tt)
     all_slopes.to_csv('allSlops.txt', sep=';', index=False, header=True)
-    result.to_csv('breakTrend.txt', sep=';', index=False, header=True)
-    print('files saved: allSlops.txt, breakTrend.txt')
+    #result.to_csv('breakTrend.txt', sep=';', index=False, header=True)
+    print('files saved: allSlops.txt')
     return result
 
 
@@ -193,7 +213,6 @@ def compare_sales(df0, df_result):
     y, m = max_year_month(df0)
     list_df = list()
     all_ = len(list(df_result.iloc[:, 1].drop_duplicates()))
-    #tempL = list(['GR22AKA'])
     for i in df_result.iloc[:, 1].drop_duplicates():
         df_n = df0.loc[df0.iloc[:, 2] == i]
         df_main0 = pd.merge(table_id(df0, *list(df0.iloc[:, 0].drop_duplicates())),
@@ -214,8 +233,8 @@ def compare_sales(df0, df_result):
         list_df.append(df_f)
 
         '#print progress'
-        if len(list_df) % 10 == 0:
-            print('Sales analysis: {}/{}'.format(len(list_df), all_))
+        if len(list_df) % 50 == 0:
+            print('Analysis sales for break point: {}/{}'.format(len(list_df), all_))
         else:
             pass
     to_file = pd.concat(list_df)
@@ -243,79 +262,47 @@ def get_sales_shares(df_, y):
 
     return grouped_.iloc[:, [0, 1, 4, 5]]
 
-"""
-funkcja która analizuje trend z całego okresu
-
-"""
-
-
-
-
 
 def main():
-    print("Wczytuje dane...")
+    print("Loading data ...")
     df0 = get_data()
     if df0.empty is False:
         years = list(df0.iloc[:, 0].drop_duplicates())
-        print("Dostępne lata do analizy: {}".format(years))
-        y = input('Dla którego roku zbadać dane?: ')
+        print("Available years for analysis: {}".format(years))
+        y = input('For which year the data should be explored ?: ')
 
         try:
             if int(y) > 0 and min(years) == int(y) - 1:
 
                 slops = cumulative_slope_per_month(get_data(), int(y))
-                cs = compare_sales(get_data(), slops)
+                slops_range = slope_whole_range(df0, *list(slops.iloc[:, 1].drop_duplicates()))
+                df1 = pd.merge(slops, slops_range, on='id', how='left', suffixes=('_df1', '_df2'))
 
-                print('Analizuje udziały sprzedaży grupobrendów w grupie...')
+                print('Analysis sales for break point...')
+                cs = compare_sales(get_data(), df1)
+
+                print('Analysis the shares of group sales in the group ...')
                 col = cs.columns[1]
                 sh = get_sales_shares(df0, int(y))
                 sh.columns = sh.columns.str.replace(sh.columns[1], col)
-                df1 = pd.merge(cs, sh, on=col, how='left', suffixes=('_df1', '_df2'))
-
-                print(df1.head())
-
+                df2 = pd.merge(cs, sh, on=col, how='left', suffixes=('_df1', '_df2'))
+                df2.to_csv('breakTrend.txt', sep=';', index=False, header=True)
+                print('File saved breakTrend, process completed!')
 
             else:
-                print("Źle wpisany rok lub brak poprzedniego roku do porównania.")
+                print("Incorrectly entered year or no year to compare.")
 
         except ValueError:
-            print("Wpisz odpowiedni rok i spróbuj ponowanie")
+            print("Please, enter corectly year and try again.")
 
     else:
         pass
 
-    print('koniec')
+    print('END')
 
 
-main()
+print(main())
 
+#print(x.loc[x.id == 'GR01LGE'])
 
-"""
-                        print(cs.head())
-
-                        df_main0 = pd.merge(table_id(df0, *list(df0.iloc[:, 0].drop_duplicates())),
-                                            df_n,
-                                            on='id',
-                                            how='left',
-                                            suffixes=('_df1', '_df2')).fillna(0)
-"""
-
-"""
-        try:
-            slops = cumulative_slope_per_month(df0, int(y))
-            ay = int(y)
-        except ValueError:
-            print("Wpisz odpowiedni rok i spróbuj ponowanie")
-
-        if ay > 0 and min(years) == ay-1:
-            q = input('Czy porównać sprzedaż dla tabeli trendów: ')
-
-            if q == 't' or q == 'y':
-                compare_sales(df0, slops)
-                print("end")
-            else:
-                print("end")
-        else:
-            print("Data is missing a year back to compare sales.")
-"""
 
